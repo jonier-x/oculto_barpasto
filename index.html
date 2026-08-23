@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Oculto — La Experiencia</title>
+    
+    <!-- Fuentes premium -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================
+           VARIABLES Y RESET
+        ========================================== */
+        :root {
+            --bg-black: #050404;
+            --bg-panel: #0a0807;
+            --gold-bright: #e8c972;
+            --gold-main: #c7a049;
+            --gold-dim: #8a6f33;
+            --gold-dark: #3a2e12;
+            --text-light: #f4ede1;
+            --text-muted: #a39b8b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-black);
+            color: var(--text-light);
+            font-family: "EB Garamond", serif;
+            overflow-x: hidden;
+            overscroll-behavior-y: none;
+        }
+
+        /* Textura de grano sutil */
+        body::before {
+            content: "";
+            position: fixed; inset: 0; pointer-events: none; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            z-index: 9999;
+        }
+
+        h1, h2, h3, .cinzel { font-family: "Cinzel", serif; font-weight: normal; }
+
+        /* ==========================================
+           PANTALLA DE ENTRADA (DOOR)
+        ========================================== */
+        #entry-screen {
+            position: fixed; inset: 0; z-index: 10000;
+            background-color: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.2s;
+        }
+        
+        #entry-screen::after {
+            content: ""; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, rgba(199,160,73,0.08) 0%, transparent 60%);
+            animation: breathe 4s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+
+        .entry-logo-img {
+            width: 260px; max-width: 70vw; height: auto;
+            filter: drop-shadow(0 0 30px rgba(199,160,73,0.2));
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .entry-hint {
+            margin-top: 30px; font-size: 12px; letter-spacing: 0.3em;
+            color: var(--gold-dim); text-transform: uppercase;
+            animation: pulseHint 2.5s infinite ease-in-out;
+        }
+
+        #entry-flash {
+            position: fixed; inset: 0; z-index: 10001; background: var(--gold-bright);
+            opacity: 0; pointer-events: none; transition: opacity 0.8s ease-out;
+        }
+
+        @keyframes breathe { 0% { opacity: 0.5; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1.05); } }
+        @keyframes pulseHint { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        /* ==========================================
+           CONTENIDO PRINCIPAL
+        ========================================== */
+        #main-content {
+            opacity: 0; visibility: hidden;
+            transition: opacity 1.5s ease 0.5s;
+            max-width: 600px; margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        header {
+            text-align: center; padding: 60px 20px 50px;
+            position: relative;
+            background-image:
+                linear-gradient(to bottom, rgba(5,4,4,0.55) 0%, rgba(5,4,4,0.75) 60%, var(--bg-black) 100%),
+                url('images/header-bg.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            margin-bottom: 10px;
+        }
+        .header-logo-img {
+            width: 220px; max-width: 60%; height: auto;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+        }
+        .header-logo { font-size: 32px; color: var(--gold-bright); letter-spacing: 0.2em; margin-bottom: 10px;}
+        .header-tagline { font-size: 11px; letter-spacing: 0.3em; color: var(--gold-dim); text-transform: uppercase; }
+
+        /* ==========================================
+           NAVEGACIÓN HORIZONTAL
+        ========================================== */
+        nav.sticky-nav {
+            position: sticky; top: 0; z-index: 100;
+            background: linear-gradient(to bottom, var(--bg-black) 60%, transparent);
+            padding: 15px 0 15px 20px;
+            display: flex; gap: 20px; overflow-x: auto;
+            scrollbar-width: none;
+        }
+        nav.sticky-nav::-webkit-scrollbar { display: none; }
+        
+        .nav-btn {
+            background: none; border: none; color: var(--text-muted);
+            font-family: "Cinzel", serif; font-size: 13px; letter-spacing: 0.15em;
+            text-transform: uppercase; padding: 5px 0; cursor: pointer;
+            position: relative; white-space: nowrap; transition: color 0.4s ease;
+        }
+        .nav-btn::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 1px;
+            background: var(--gold-main); transition: width 0.4s ease;
+        }
+        .nav-btn.active { color: var(--gold-bright); }
+        .nav-btn.active::after { width: 100%; }
+
+        /* ==========================================
+           SECCIONES, VIDEOS Y MEDIA
+        ========================================== */
+        section { scroll-margin-top: 80px; margin-bottom: 70px; padding: 0 20px; }
+
+        .media-container {
+            width: 100%; aspect-ratio: 9/16; max-height: 70vh;
+            background: var(--bg-panel); border-radius: 8px;
+            overflow: hidden; margin-bottom: 25px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .media-container video, .media-container img {
+            width: 100%; height: 100%; object-fit: cover;
+            opacity: 0.85; transition: opacity 0.5s ease;
+        }
+        .media-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, var(--bg-black) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .cat-title { font-size: 28px; color: var(--gold-main); letter-spacing: 0.1em; margin-bottom: 8px; }
+        .cat-phrase { font-size: 16px; font-style: italic; color: var(--text-muted); margin-bottom: 30px; }
+
+        /* ==========================================
+           LISTA DE PRODUCTOS
+        ========================================== */
+        .product-list { list-style: none; }
+        .product-item {
+            display: flex; align-items: baseline; margin-bottom: 22px;
+            position: relative;
+        }
+        .product-info { flex-shrink: 0; max-width: 70%; }
+        .product-name { font-size: 19px; color: var(--text-light); letter-spacing: 0.03em; }
+        .product-desc { font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 4px; }
+        
+        .product-dots {
+            flex-grow: 1; border-bottom: 1px dotted var(--gold-dark);
+            margin: 0 12px; position: relative; top: -6px; opacity: 0.5;
+        }
+        
+        .product-price {
+            font-family: "Cinzel", serif; font-size: 16px; color: var(--gold-main);
+            flex-shrink: 0; letter-spacing: 0.05em;
+        }
+
+        /* ==========================================
+           SECCIÓN: LOS SECRETOS DE OCULTO
+        ========================================== */
+        .secret-card {
+            background: linear-gradient(145deg, var(--bg-panel), #000);
+            border: 1px solid var(--gold-dark); border-radius: 8px;
+            padding: 20px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 15px; cursor: pointer;
+            transition: border-color 0.4s, transform 0.4s;
+        }
+        .secret-card:active { transform: scale(0.98); }
+        .secret-thumb { width: 60px; height: 80px; background: #111; border-radius: 4px; object-fit: cover; }
+        .secret-data { flex-grow: 1; }
+        .secret-name { font-family: "Cinzel"; font-size: 18px; color: var(--gold-bright); margin-bottom: 5px;}
+        .secret-click { font-size: 11px; text-transform: uppercase; color: var(--gold-dim); letter-spacing: 0.1em; }
+
+        /* ==========================================
+           MODAL
+        ========================================== */
+        #modal {
+            position: fixed; inset: 0; z-index: 100000;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: all 0.5s ease;
+            padding: 20px;
+        }
+        #modal.active { opacity: 1; visibility: visible; }
+        .modal-content { max-width: 400px; width: 100%; text-align: center; transform: translateY(20px); transition: transform 0.5s ease; }
+        #modal.active .modal-content { transform: translateY(0); }
+        .modal-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--gold-dark); }
+        .modal-title { font-size: 26px; color: var(--gold-bright); margin-bottom: 10px; }
+        .modal-desc { font-size: 16px; color: var(--text-light); font-style: italic; margin-bottom: 25px; line-height: 1.5; }
+        .modal-price { font-size: 22px; color: var(--gold-main); font-family: "Cinzel"; margin-bottom: 30px; }
+        .modal-close {
+            background: transparent; border: 1px solid var(--gold-dim); color: var(--gold-main);
+            padding: 12px 30px; font-family: "Cinzel"; letter-spacing: 0.1em; border-radius: 4px; cursor: pointer;
+        }
+
+        /* ==========================================
+           EASTER EGG Y FOOTER
+        ========================================== */
+        .easter-egg-container { text-align: center; margin: 40px 0; }
+        .easter-key { font-size: 20px; opacity: 0.15; cursor: pointer; transition: opacity 0.5s; }
+        .easter-message { font-size: 14px; color: var(--gold-bright); font-style: italic; opacity: 0; transition: opacity 0.8s; height: 0; overflow: hidden; margin-top: 15px;}
+        .easter-message.show { opacity: 1; height: auto; }
+
+        footer { text-align: center; border-top: 1px solid var(--gold-dark); padding-top: 40px; margin: 0 20px;}
+        .footer-logo-img { width: 120px; max-width: 40%; height: auto; margin: 0 auto 15px; opacity: 0.8; }
+        .footer-phrase { font-size: 14px; font-style: italic; color: var(--text-muted); margin-bottom: 30px; }
+        .footer-links { display: flex; flex-direction: column; gap: 15px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.3s;}
+        .footer-links a:hover { color: var(--gold-main); }
+
+        /* ==========================================
+           ANIMACIONES DE SCROLL (REVEAL)
+        ========================================== */
+        .reveal { opacity: 0; transform: translateY(25px); transition: opacity 1s cubic-bezier(0.2, 0.8, 0.2, 1), transform 1s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+    </style>
+</head>
+<body>
+
+    <!-- DESTELLO DE TRANSICIÓN -->
+    <div id="entry-flash"></div>
+
+    <!-- PANTALLA DE ENTRADA -->
+    <div id="entry-screen">
+        <img src="images/logo-candado.png" alt="Oculto" class="entry-logo-img">
+        <div class="entry-hint">Toca para entrar</div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div id="main-content">
+        
+        <header class="reveal">
+            <img src="images/logo-candado.png" alt="Oculto" class="header-logo-img">
+            <div class="header-tagline">Menú de Autor</div>
+        </header>
+
+        <!-- NAVEGACIÓN STICKY -->
+        <nav class="sticky-nav" id="main-nav">
+            <button class="nav-btn active" data-target="destacados">Secretos</button>
+            <button class="nav-btn" data-target="whiskys">Whiskys</button>
+            <button class="nav-btn" data-target="rones">Rones</button>
+            <button class="nav-btn" data-target="tequila">Tequila</button>
+            <button class="nav-btn" data-target="aguardientes">Aguardientes</button>
+            <button class="nav-btn" data-target="vodka">Vodka</button>
+            <button class="nav-btn" data-target="cervezas">Cervezas</button>
+            <button class="nav-btn" data-target="cocteleria">Cócteles</button>
+            <button class="nav-btn" data-target="shots">Shots</button>
+            <button class="nav-btn" data-target="extras">Extras</button>
+        </nav>
+
+        <!-- SECCIÓN: LOS SECRETOS (DESTACADOS) -->
+        <section id="destacados" class="nav-section">
+            <h2 class="cat-title cinzel reveal" style="font-size: 20px; text-align: center; margin-bottom: 30px;">✦ Los Secretos de Oculto ✦</h2>
+            
+            <div class="secret-card reveal" onclick="openModal('Cherry Vault', 'El cóctel insignia de Oculto. Vodka, sirope de cereza, jarabe simple y un toque de limón. Dulce, fotogénico, el más vendido de la casa.', '$22.000', 'images/secreto-cherry-vault.jpg')">
+                <img src="images/secreto-cherry-vault.jpg" class="secret-thumb" alt="Cherry Vault" onerror="this.style.opacity='0.2'">
+                <div class="secret-data">
+                    <div class="secret-name">Cherry Vault</div>
+                    <div class="secret-click">Cóctel de la casa ✦</div>
+                </div>
+            </div>
+
+            <div class="secret-card reveal" onclick="openModal('Beso Oculto', 'El shot #1 de la casa. Vodka con sirope de cereza. Dulce, suave, entra como jugo y pega después.', '$10.000', 'images/secreto-beso-oculto.jpg')">
+                <img src="images/secreto-beso-oculto.jpg" class="secret-thumb" alt="Beso Oculto" onerror="this.style.opacity='0.2'">
+                <div class="secret-data">
+                    <div class="secret-name">Beso Oculto</div>
+                    <div class="secret-click">Shot de la casa ✦</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: WHISKYS (Video de 19s) -->
+        <section id="whiskys" class="nav-section">
+            <div class="media-container reveal">
+                <video class="cinematic-video" muted loop playsinline preload="none" poster="images/poster-placeholder.jpg">
+                    <source src="videos/whiskys.mp4" type="video/mp4">
+                </video>
+                <div class="media-overlay"></div>
+            </div>
+            
+            <h2 class="cat-title cinzel reveal">Whiskys</h2>
+            <p class="cat-phrase reveal">"Los secretos también envejecen."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Buchanan's Master</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$420.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Buchanan's 12 Años</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$370.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Buchanan's Deluxe</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$310.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Jack Daniel's</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$300.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Old Parr 12 Años</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$300.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Chivas Regal 12 Años</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$300.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Red Label</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$190.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Something Especial</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$220.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- SECCIÓN: RONES (Video de 13s) -->
+        <section id="rones" class="nav-section">
+            <div class="media-container reveal">
+                <video class="cinematic-video" muted loop playsinline preload="none" poster="images/poster-placeholder.jpg">
+                    <source src="videos/rones.mp4" type="video/mp4">
+                </video>
+                <div class="media-overlay"></div>
+            </div>
+            
+            <h2 class="cat-title cinzel reveal">Rones</h2>
+            <p class="cat-phrase reveal">"El tiempo también tiene sabor."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">León Dormido Finalizado</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$550.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Viejo de Caldas 15 Años</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$250.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Ron 8 Años</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$210.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Ron Clásico</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$170.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- SECCIÓN: TEQUILA (Video de 8s) -->
+        <section id="tequila" class="nav-section">
+            <div class="media-container reveal">
+                <video class="cinematic-video" muted loop playsinline preload="none" poster="images/poster-placeholder.jpg">
+                    <source src="videos/tequila.mp4" type="video/mp4">
+                </video>
+                <div class="media-overlay"></div>
+            </div>
+            
+            <h2 class="cat-title cinzel reveal">Tequila</h2>
+            <p class="cat-phrase reveal">"Representa al mexicano que somos."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Don Julio</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$500.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">1800</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$400.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">José Cuervo</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$260.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Olmeca Reposado</div>
+                        <div class="product-desc">Media: $110.000</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$210.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Olmeca Silver</div>
+                        <div class="product-desc">Media: $100.000</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$200.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Jimador</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$220.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- SECCIÓN: AGUARDIENTES (Video de 3s) -->
+        <section id="aguardientes" class="nav-section">
+            <div class="media-container reveal">
+                <video class="cinematic-video" muted loop playsinline preload="none" poster="images/poster-placeholder.jpg">
+                    <source src="videos/aguardientes.mp4" type="video/mp4">
+                </video>
+                <div class="media-overlay"></div>
+            </div>
+            
+            <h2 class="cat-title cinzel reveal">Aguardientes</h2>
+            <p class="cat-phrase reveal">"Lo nuestro también tiene secretos."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Antioqueño Verde / Azul</div>
+                        <div class="product-desc">Media: $90.000</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$170.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Amarillo</div>
+                        <div class="product-desc">Media: $90.000</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$170.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- SECCIÓN: VODKA -->
+        <section id="vodka" class="nav-section">
+            <div class="media-container reveal">
+                <video class="cinematic-video" muted loop playsinline preload="none" poster="images/poster-placeholder.jpg">
+                    <source src="videos/vodka.mp4" type="video/mp4">
+                </video>
+                <div class="media-overlay"></div>
+            </div>
+
+            <h2 class="cat-title cinzel reveal">Vodka</h2>
+            <p class="cat-phrase reveal">"Limpio, frío, directo al secreto."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Absolut</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$220.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Smirnoff</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$180.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- SECCIÓN: CERVEZAS (Con la imagen aportada) -->
+        <section id="cervezas" class="nav-section">
+            <div class="media-container reveal">
+                <img src="images/cervezas.jpg" alt="Cerveza Corona en Hielo" onerror="this.style.opacity='0.2'">
+                <div class="media-overlay"></div>
+            </div>
+            
+            <h2 class="cat-title cinzel reveal">Cervezas</h2>
+            <p class="cat-phrase reveal">"Refrescante como un secreto a voces."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Corona</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$15.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Cerveza en Lata</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$10.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- SECCIÓN: CÓCTELES -->
+        <section id="cocteleria" class="nav-section">
+            <div class="media-container reveal">
+                <img src="images/cocteles.jpg" alt="Cócteles Oculto" onerror="this.style.opacity='0.2'">
+                <div class="media-overlay"></div>
+            </div>
+
+            <h2 class="cat-title cinzel reveal">Cócteles</h2>
+            <p class="cat-phrase reveal">"Hay secretos que empiezan con un sorbo."</p>
+
+            <h3 class="cinzel reveal" style="font-size: 15px; color: var(--gold-dim); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 18px;">Oculto House</h3>
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Cherry Vault</div>
+                        <div class="product-desc">Vodka, Sirope de Cereza, Jarabe, Limón</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$22.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Frutos del Oculto</div>
+                        <div class="product-desc">Gin, Frutos Rojos, Jarabe, Soda</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$24.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Pasto Sunset</div>
+                        <div class="product-desc">Aguardiente, Granadina, Frutos Rojos, Limón</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$18.000</div>
+                </li>
+            </ul>
+
+            <h3 class="cinzel reveal" style="font-size: 15px; color: var(--gold-dim); letter-spacing: 0.15em; text-transform: uppercase; margin: 30px 0 18px;">Vault Reserva</h3>
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Ron Caldas Rojo</div>
+                        <div class="product-desc">Ron, Granadina, Cereza, Limón</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$20.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Tequila Oculto</div>
+                        <div class="product-desc">Tequila, Jarabe, Granadina, Limón</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$25.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">MacGregor Cherry</div>
+                        <div class="product-desc">MacGregor, Sirope de Cereza, Jarabe, Limón</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$28.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- SECCIÓN: SHOTS -->
+        <section id="shots" class="nav-section">
+            <div class="media-container reveal">
+                <img src="images/shots.jpg" alt="Shots Oculto" onerror="this.style.opacity='0.2'">
+                <div class="media-overlay"></div>
+            </div>
+
+            <h2 class="cat-title cinzel reveal">Shots</h2>
+            <p class="cat-phrase reveal">"Los que se venden solos."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Beso Oculto</div>
+                        <div class="product-desc">Vodka, Sirope de Cereza</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$10.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">El Pasto</div>
+                        <div class="product-desc">Aguardiente, Sirope de Cereza · 3x $20.000</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$8.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Veneno Rosa</div>
+                        <div class="product-desc">Gin, Frutos Rojos, Jarabe Simple</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$12.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Fuego</div>
+                        <div class="product-desc">Tequila, Granadina</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$14.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Vault</div>
+                        <div class="product-desc">MacGregor, Cereza en el fondo</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$14.000</div>
+                </li>
+            </ul>
+
+            <div class="secret-card reveal" style="cursor: default; margin-top: 10px;">
+                <div class="secret-data" style="text-align: center;">
+                    <div class="secret-name">Tabla Oculto</div>
+                    <div class="product-desc" style="margin-top: 6px;">Los 5 shots de la casa, uno de cada uno</div>
+                    <div class="modal-price" style="margin: 12px 0 0; font-size: 20px;">$45.000</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: EXTRAS / VARIOS -->
+        <section id="extras" class="nav-section">
+            <h2 class="cat-title cinzel reveal">Extras</h2>
+            <p class="cat-phrase reveal">"Lo esencial, también tiene su lugar."</p>
+
+            <ul class="product-list">
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Red Bull</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$15.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Electrolit</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$20.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Gatorade</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$12.000</div>
+                </li>
+                <li class="product-item reveal">
+                    <div class="product-info">
+                        <div class="product-name">Botella de Agua</div>
+                    </div>
+                    <div class="product-dots"></div>
+                    <div class="product-price">$5.000</div>
+                </li>
+            </ul>
+        </section>
+
+        <!-- EASTER EGG -->
+        <div class="easter-egg-container reveal">
+            <span class="easter-key" id="easter-key">🔑</span>
+            <div class="easter-message" id="easter-message">"Has encontrado un secreto. Muestra esto en la barra."</div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="reveal">
+            <img src="images/logo-candado.png" alt="Oculto" class="footer-logo-img">
+            <div class="footer-phrase">"Algunas cosas es mejor descubrirlas."</div>
+            <div class="footer-links">
+                <a href="https://instagram.com/oculto_barpasto" target="_blank">Instagram</a>
+                <a href="https://facebook.com/Oculto" target="_blank">Facebook</a>
+                <a href="https://wa.me/57" target="_blank">Reservas / WhatsApp</a>
+                <a href="https://maps.google.com/?q=Carrera+24+%2318-68+Parque+Nari%C3%B1o+Pasto" target="_blank">Carrera 24 #18-68 · Parque Nariño</a>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal">
+        <div class="modal-content">
+            <img src="" class="modal-img" id="modal-img" onerror="this.style.opacity='0.1'">
+            <h3 class="modal-title cinzel" id="modal-title">Nombre</h3>
+            <p class="modal-desc" id="modal-desc">Descripción</p>
+            <div class="modal-price" id="modal-price">$0</div>
+            <button class="modal-close" onclick="closeModal()">Volver</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            const entryScreen = document.getElementById('entry-screen');
+            const entryFlash = document.getElementById('entry-flash');
+            const mainContent = document.getElementById('main-content');
+            const entryLogo = document.querySelector('.entry-logo-img');
+            let hasEntered = false;
+
+            const enterExperience = (e) => {
+                if (hasEntered) return;
+                hasEntered = true;
+                if(e) e.preventDefault();
+
+                entryLogo.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    entryFlash.style.opacity = '0.8';
+                    entryScreen.style.opacity = '0';
+                    entryScreen.style.visibility = 'hidden';
+                    
+                    setTimeout(() => {
+                        entryFlash.style.opacity = '0';
+                        mainContent.style.opacity = '1';
+                        mainContent.style.visibility = 'visible';
+                        window.scrollTo(0, 0);
+                    }, 400);
+                }, 400);
+            };
+
+            entryScreen.addEventListener('click', enterExperience);
+            entryScreen.addEventListener('touchend', enterExperience, { passive: false });
+
+            const revealOptions = { root: null, rootMargin: '0px 0px -10% 0px', threshold: 0.1 };
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, revealOptions);
+            
+            document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+            const videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target;
+                    if (entry.isIntersecting) {
+                        let playPromise = video.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(error => console.log("Autoplay prevenido."));
+                        }
+                    } else {
+                        video.pause();
+                    }
+                });
+            }, { root: null, rootMargin: '100px', threshold: 0.1 });
+
+            document.querySelectorAll('.cinematic-video').forEach(video => videoObserver.observe(video));
+
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const sections = document.querySelectorAll('.nav-section');
+            const navContainer = document.getElementById('main-nav');
+
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = btn.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+                    
+                    if (targetSection) {
+                        const navHeight = navContainer.offsetHeight;
+                        const targetPosition = targetSection.getBoundingClientRect().top + window.scrollY - navHeight - 20;
+                        window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // En vez de activar el nav apenas una sección "toca" el rango,
+            // calculamos cuál sección está más cerca del tope visible.
+            // Esto evita que, con secciones de distinta altura (video largo vs corto),
+            // el observer confunda cuál es la sección "actual".
+            const updateActiveNav = () => {
+                const navHeight = navContainer.offsetHeight;
+                const scrollLine = navHeight + 30; // línea de referencia justo debajo del nav
+
+                let currentSection = sections[0];
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    if (rect.top - scrollLine <= 0) {
+                        currentSection = section;
+                    }
+                });
+
+                const id = currentSection.getAttribute('id');
+                navButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('data-target') === id) {
+                        btn.classList.add('active');
+                        btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    }
+                });
+            };
+
+            let navScrollTimeout;
+            window.addEventListener('scroll', () => {
+                if (navScrollTimeout) window.cancelAnimationFrame(navScrollTimeout);
+                navScrollTimeout = window.requestAnimationFrame(updateActiveNav);
+            }, { passive: true });
+
+            const easterKey = document.getElementById('easter-key');
+            const easterMsg = document.getElementById('easter-message');
+            easterKey.addEventListener('click', () => {
+                easterKey.style.opacity = '1';
+                easterKey.style.color = 'var(--gold-bright)';
+                easterMsg.classList.add('show');
+            });
+        });
+
+        const modal = document.getElementById('modal');
+        function openModal(title, desc, price, imgSrc) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('modal-price').innerText = price;
+            document.getElementById('modal-img').src = imgSrc;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+</body>
+</html>
